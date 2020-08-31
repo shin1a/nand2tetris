@@ -1,0 +1,30 @@
+/* Control Unit of CPU */ 
+
+
+
+CHIP Jump {
+
+    IN  j0,j1,j2,    // Instruction for execution
+        ng,                 // ALU output M is negative ? 
+        zr,                 // ALU output M is zero ? 
+        cInstr; 
+
+    OUT load;           
+
+
+    PARTS:
+
+    /* JUMP UNIT */ 
+    Nand(a=ng,b=ng,out=nng);
+    Nand(a=zr,b=zr,out=nzr);
+    Nand(a=nng,b=nzr,out=x0);
+    Nand(a=x0,b=x0,out=x1);
+    Nand(a=j0,b=x1,out=jump0);
+    Nand(a=zr,b=j1,out=jump1);
+    Nand(a=ng,b=j2,out=jump2);
+    Nand(a=jump1,b=jump2,out=x2);
+    Nand(a=x2,b=x2,out=jump12);
+    Nand(a=jump0,b=jump12,out=jump);
+    Nand(a=jump,b=cInstr,out=nload);
+    Nand(a=nload,b=nload,out=load);
+}

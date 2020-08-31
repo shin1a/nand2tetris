@@ -1,0 +1,55 @@
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    Not(in = instruction[15], out = aInst);
+    Or(a = aInst, b = instruction[5], out = loadA);
+    And(a = instruction[15], b = instruction[4], out = loadD);
+    And(a = instruction[3], b = instruction[15], out = writeM);
+
+    // Instruction or ALU out mux for A register input
+    Mux16(a = instruction, b = aluOut, sel = instruction[15], out = aRegisterInput);
+
+    ARegister(in = aRegisterInput, load = loadA, out = aRegisterOut, out[0..14] = addressM);
+
+    // A Register or M mux for ALU input
+    Mux16(a = aRegisterOut, b = inM, sel = instruction[12], out = amMuxOut);
+
+    DRegister(in = aluOut, load = loadD, out = dOut);
+
+    ALU(x = dOut, y = amMuxOut,
+    	zx = instruction[11],
+	nx = instruction[10],
+	zy = instruction[9],
+	ny = instruction[8],
+	f  = instruction[7],
+	no = instruction[6],
+	out = outM, out = aluOut,
+	zr = zr,
+	ng = ng);
+
+    // need to know if ALU result is positive
+    Not(in = ng, out = gt0);
+    Not(in = zr, out = not0);
+    And(a = gt0, b = not0, out = pos);
+
+    And(a = instruction[2], b = ng, out = jump0);
+    And(a = instruction[1], b = zr, out = jump1);
+    And(a = instruction[0], b = pos, out = jump2);
+
+    Or(a = jump0, b = jump1, out = jTemp);
+    Or(a = jTemp, b = jump2, out = ugh);
+    And(a = instruction[15], b = ugh, out = jump); // only jump on c instructions
+
+    PC(in = aRegisterOut, load = jump, inc = true, reset = reset, out[0..14] = pc);
+}

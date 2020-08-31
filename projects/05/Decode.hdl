@@ -1,0 +1,34 @@
+
+CHIP Decode {
+
+    IN  instruction[16];    // Instruction for execution
+
+    OUT j0,j1,j2,           // jump bits 
+        writeM,             // write to M ? 
+        loadD,              // load D-Register
+        loadA,              // load A-Register 
+        zx,nx,zy,ny,f,no,   // ALU controls  
+        a,                  // A-Register or M
+        cInstr;             // if C-Instruction 
+
+
+    PARTS:
+
+    /* DECONPOSITION */ 
+    Not(in=instruction[15],out=aInstr); 
+    And(a=instruction[15],b=true,out=cInstr); 
+    And(a=true,b=instruction[0],out=j0);
+    And(a=true,b=instruction[1],out=j1);
+    And(a=true,b=instruction[2],out=j2);
+    And(a=instruction[15],b=instruction[3],out=writeM);
+    And(a=instruction[15],b=instruction[4],out=loadD);
+    Or(a=instruction[5],b=aInstr,out=loadA);
+    And(a=true,b=instruction[6],out=no);
+    And(a=true,b=instruction[7],out=f);
+    And(a=true,b=instruction[8],out=ny);
+    And(a=true,b=instruction[9],out=zy);
+    And(a=true,b=instruction[10],out=nx);
+    And(a=true,b=instruction[11],out=zx);
+    And(a=true,b=instruction[12],out=a);
+
+}

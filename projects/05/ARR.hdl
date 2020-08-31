@@ -1,0 +1,10 @@
+CHIP ARR { 
+
+    IN a, b;
+    OUT out;
+
+    PARTS: 
+    Nand(a=b,b=b,out=notb);
+    Nand(a=a,b=notb,out=out);
+
+}
